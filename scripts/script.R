@@ -21,7 +21,7 @@ Sys.setenv(SPARK_HOME=SPARK_HOME)
 library(SparkR,
         lib.loc=c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib")))
 
-# Iniciando uma sessão do 
+# Iniciando uma sessão do Spark
 sparkR.session(master = "local[*]",
                sparkConfig = list(spark.driver.memory = "1g"))
 
@@ -153,34 +153,35 @@ hist_data = histogram(dados, dados$age, nbins = 16)
 ggplot(hist_data) +
   geom_col(aes(x = centroids, y = counts))
 
-# # Definir a quantidade de bins
-# nbin = 30
-# 
-# # Calcular mínimo de x
-# x_min = collect(agg(dados, min(dados$age)))
-# # Calcular máximo de x
-# x_max = collect(agg(dados, max(dados$age)))
-# # Definir os intervalos para os bins de x
-# x_bin = seq(floor(x_min[[1]]),
-#             ceiling(x_max[[1]]),
-#             length = nbin)
-# 
-# # Calcular tamanho do intervalo dos bins de x e y
-# x_bin_width = x_bin[[2]] - x_bin[[1]]
-# 
-# # Calcular a qual bin pertece cada valor observado
-# graph_data = withColumn(dados, "x_bin", ceiling((dados$age - x_min[[1]]) / x_bin_width))
-# graph_data = mutate(graph_data, x_bin = ifelse(graph_data$x_bin == 0, 1, graph_data$x_bin))
-# 
-# graph_data = collect(agg(groupBy(graph_data, "x_bin"),
-#                          count = n(graph_data$x_bin)))
-# 
-# ggplot(graph_data) +
-#   geom_col(aes(x = x_bin, y = count))
+# Definir a quantidade de bins
+nbin = 16
 
+# Calcular mínimo de x
+x_min = collect(agg(dados, min(dados$age)))
+# Calcular máximo de x
+x_max = collect(agg(dados, max(dados$age)))
+# Definir os intervalos para os bins de x
+x_bin = seq(floor(x_min[[1]]),
+            ceiling(x_max[[1]]),
+            length = nbin)
+
+# Calcular tamanho do intervalo dos bins de x e y
+x_bin_width = x_bin[[2]] - x_bin[[1]]
+
+# Calcular a qual bin pertece cada valor observado
+graph_data = withColumn(dados, "x_bin", ceiling((dados$age - x_min[[1]]) / x_bin_width))
+graph_data = mutate(graph_data, x_bin = ifelse(graph_data$x_bin == 0, 1, graph_data$x_bin))
+
+graph_data = collect(agg(groupBy(graph_data, "x_bin"),
+                         count = n(graph_data$x_bin)))
+
+ggplot(graph_data) +
+  geom_col(aes(x = x_bin, y = count))
+
+
+# Salvar dados em partições de gênero
 
 caminho = "../dados/parquet"
-# Salvar dados particionados
 write.df(
   dados, caminho, "parquet", mode = "overwrite",
   partitionBy = "sex"
