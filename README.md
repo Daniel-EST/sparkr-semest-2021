@@ -1,5 +1,5 @@
 # Utilizando o R para Big Data, uma introdução prática ao SparkR
-Este repositório contém todos recursos utilizados no minicurso durante a 12a SEMEST da Universidade Federal Fluminense
+Este repositório contém todos recursos utilizados no minicurso durante a 12ª SEMEST da Universidade Federal Fluminense
 
 ## Resumo
 Seja ao assistir a um filme favorito, realizar uma compra online ou postar uma foto em uma rede social, são enviadas informação que poderão ser utilizadas posteriormente para recomendações e melhoria na experiência de usuário. Assim, tornou-se indispensável a capacidade de explorar grande volume de dados, das mais diversificadas fontes. Para resolver este desafio, foi desenvolvido o Apache Spark, um framework de código aberto que busca democratizar a utilização de técnicas de computação distribuída e a aplicação de diversas tarefas em grande escala. Com o Spark é possível ler, transformar, descrever e treinar modelos de aprendizado de máquina em bancos de dados onde técnicas tradicionais não são capazes de gerar resultados por limitação de recursos computacionais.
