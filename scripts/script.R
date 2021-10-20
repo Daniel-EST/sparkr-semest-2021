@@ -65,12 +65,6 @@ require(ggplot2)
 ggplot(gender_count) +
   geom_col(aes(x = sex, y = count))
 
-dados = withColumn(dados, "income", ifelse(dados$income == -1, NA, dados$income))
-
-NA_renda = filter(dados, isNull(dados$income))
-percent_NA_renda = nrow(NA_renda)/nrow(dados)
-print(percent_NA_renda)
-
 dados = transform(dados, location_city = regexp_replace(dados$location, ", .*", ""))
 cidade_contagem = count(groupBy(dados, "location_city"))
 collect(arrange(cidade_contagem, -cidade_contagem$count))
@@ -79,6 +73,7 @@ dados = transform(dados, location_state = regexp_replace(dados$location, ".*, ",
 estado_contagem = count(groupBy(dados, "location_state"))
 collect(arrange(estado_contagem, -estado_contagem$count))
 
+dados = drop(dados, dados$location)
 
 collect(
   agg(
@@ -86,12 +81,34 @@ collect(
       max_age = max(dados$age),
       min_age = min(dados$age),
       avg_age = avg(dados$age),
+      var_age = var(dados$age),
       med_age = percentile_approx(dados$age, .5)
   )
 )
 
 
-boxplot_age = collect(
+status_count = 
+  collect(
+    arrange(
+      count(
+        groupBy(dados, "sex", "status")
+      ), "sex", "count", decreasing = TRUE
+    )
+  )
+print(status_count)
+
+status_count$status = factor(status_count$status, unique(status_count$status))
+
+ggplot(status_count) +
+  geom_col(aes(x = sex, y = count, fill = status), position = "dodge2")
+
+dados = withColumn(dados, "income", ifelse(dados$income == -1, NA, dados$income))
+
+NA_renda = filter(dados, isNull(dados$income))
+percent_NA_renda = nrow(NA_renda)/nrow(dados)
+print(percent_NA_renda)
+
+boxplot_renda = collect(
   agg(
     groupBy(dados, dados$sex),
       med = percentile_approx(dados$income, percentage=.5),
@@ -100,8 +117,7 @@ boxplot_age = collect(
 )
 
 options(scipen = 999)
-
-ggplot(boxplot_age,
+ggplot(boxplot_renda,
        aes(x = sex,
            ymin = q1 - 1.5 * (q3 - q1),
            lower = q1,
@@ -117,8 +133,6 @@ ggplot(boxplot_age,
 hist_data = histogram(dados, dados$age, nbins = 16)
 ggplot(hist_data) +
   geom_col(aes(x = centroids, y = counts))
-
-
 
 # # Definir a quantidade de bins
 # nbin = 30
